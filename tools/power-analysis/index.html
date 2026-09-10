@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Omics Power Analysis &mdash; MSB</title>
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../../index.html">MSB</a>
+    <nav>
+      <a href="../../index.html">Home</a>
+      <a href="../index.html" class="active">Tools</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1>Multi-Omics Power Analysis</h1>
+  <p class="lede">Sample size and statistical power for common study designs.</p>
+
+  <div class="mode-toggle" id="studyModeToggle">
+    <button type="button" class="active" data-mode="ttest">General two-group</button>
+    <button type="button" data-mode="rnaseq" disabled title="Planned &mdash; Phase 2">RNA-seq DE</button>
+    <button type="button" data-mode="metagenomics" disabled title="Planned &mdash; Phase 3">Metagenomics</button>
+  </div>
+
+  <section id="ttestCalculator">
+    <div class="mode-toggle" id="directionToggle">
+      <button type="button" class="active" data-direction="power">Solve for power</button>
+      <button type="button" data-direction="n">Solve for sample size</button>
+    </div>
+
+    <form class="calc-form" id="ttestForm">
+
+      <div id="field-n">
+        <label for="n">Sample size per group (n)</label>
+        <input type="number" id="n" min="2" step="1" value="20">
+        <div class="field-hint">Used when solving for power.</div>
+      </div>
+
+      <div id="field-power" style="display:none;">
+        <label for="targetPower">Target power</label>
+        <input type="number" id="targetPower" min="0.01" max="0.99" step="0.01" value="0.80">
+        <div class="field-hint">Used when solving for sample size.</div>
+      </div>
+
+      <div>
+        <label for="effectInput">Effect size input</label>
+        <select id="effectInput">
+          <option value="d">Cohen's d directly</option>
+          <option value="means">Mean1, Mean2, SD</option>
+        </select>
+      </div>
+
+      <div id="field-d">
+        <label for="d">Cohen's d</label>
+        <input type="number" id="d" step="0.01" value="0.5">
+        <div class="field-hint">Standardized effect size, (mean1 &minus; mean2) / pooled SD.</div>
+      </div>
+
+      <div id="field-mean1" style="display:none;">
+        <label for="mean1">Mean, group 1</label>
+        <input type="number" id="mean1" step="any" value="10">
+      </div>
+      <div id="field-mean2" style="display:none;">
+        <label for="mean2">Mean, group 2</label>
+        <input type="number" id="mean2" step="any" value="12">
+      </div>
+      <div id="field-sd" style="display:none;">
+        <label for="sd">Pooled SD</label>
+        <input type="number" id="sd" min="0.0001" step="any" value="4">
+      </div>
+
+      <div>
+        <label for="alpha">Significance level (&alpha;)</label>
+        <input type="number" id="alpha" min="0.0001" max="0.5" step="0.001" value="0.05">
+      </div>
+
+      <div>
+        <label for="tails">Test direction</label>
+        <select id="tails">
+          <option value="2">Two-sided</option>
+          <option value="1">One-sided</option>
+        </select>
+      </div>
+
+      <button type="submit" class="calc-submit">Calculate</button>
+    </form>
+
+    <div class="result-box hidden" id="resultBox">
+      <div id="resultHeadline" class="headline"></div>
+      <div id="resultDetail"></div>
+    </div>
+
+    <p class="caveat">
+      Two-sample comparison, equal group sizes, normal-approximation to the noncentral <em>t</em>-distribution
+      (Cohen's method). Adequate for typical metabolomics/proteomics-style continuous outcomes. Not appropriate
+      for count-based omics data (RNA-seq, metagenomics) &mdash; those modes are planned separately and will use
+      negative-binomial / overdispersed-count models rather than this t-test approximation.
+    </p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  MSB Lab &middot; <span class="todo">TODO: institution / contact</span>
+</footer>
+
+<script src="../../assets/power-analysis.js"></script>
+</body>
+</html>
