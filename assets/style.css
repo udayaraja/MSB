@@ -97,6 +97,18 @@ p.lede { color: var(--text-muted); font-size: 1.05rem; }
 
 .card:hover { border-color: var(--accent); }
 
+.card.card-tool {
+  background: #eaf4fc;
+  border-color: #b7dcf2;
+}
+.card.card-tool h3 { color: #185a8a; }
+
+.card.card-project {
+  background: #f6f0fc;
+  border-color: #d9c3f4;
+}
+.card.card-project h3 { color: #6a3d9a; }
+
 .card h3 { margin-top: 0; color: var(--accent-dark); }
 .card p { margin: 0.3rem 0 0; color: var(--text-muted); font-size: 0.92rem; }
 
