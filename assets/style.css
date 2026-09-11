@@ -98,10 +98,10 @@ p.lede { color: var(--text-muted); font-size: 1.05rem; }
 .card:hover { border-color: var(--accent); }
 
 .card.card-tool {
-  background: #eaf4fc;
-  border-color: #b7dcf2;
+  background: #e9f7ee;
+  border-color: #b7e4c7;
 }
-.card.card-tool h3 { color: #185a8a; }
+.card.card-tool h3 { color: #1c7a43; }
 
 .card.card-project {
   background: #f6f0fc;

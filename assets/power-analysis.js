@@ -1,16 +1,17 @@
 /*
- * General two-group (Cohen's d / two-sample t-test) power calculator.
- * Phase 1 of the MSB power analysis tool.
+ * Multi-Omics Power Analysis tool.
+ * Phase 1: general two-group (Cohen's d / two-sample t-test) engine, reused
+ * across the Multi-Omics and Proteomics tabs (same underlying model).
  *
  * Method: normal approximation to the noncentral t-distribution (Cohen, 1988),
- * equal n per group. This is a closed-form approximation, not an exact
- * noncentral-t computation -- adequate for typical n >~ 10-15 per group.
+ * equal n per group. Closed-form approximation, adequate for typical n >~ 10-15
+ * per group -- not an exact noncentral-t computation.
  *
- * Phase 2/3 (RNA-seq negative-binomial, metagenomics overdispersed-count
- * models) are NOT implemented here and will use precomputed lookup tables
- * generated offline in R (RNASeqPower / PROPER), interpolated client-side.
- * Planned dispersion input for RNA-seq mode: biological CV (not raw
- * dispersion parameter) -- decided 2026-09, not yet built.
+ * Transcriptomics (RNA-seq DE) and Metagenomics tabs are Phase 2/3, NOT
+ * implemented here -- they need precomputed lookup tables generated offline
+ * in R (RNASeqPower / PROPER for RNA-seq), interpolated client-side. Their
+ * panels are static placeholders; see markup for details. Planned dispersion
+ * input for RNA-seq mode: biological CV (decided 2026-09, not yet built).
  */
 
 (function () {
@@ -18,7 +19,6 @@
 
   // ---- Standard normal helpers -------------------------------------------
 
-  // Standard normal CDF via Abramowitz & Stegun 26.2.17 approximation.
   function normCDF(z) {
     const b1 = 0.319381530;
     const b2 = -0.356563782;
@@ -37,7 +37,6 @@
     }
   }
 
-  // Inverse standard normal CDF (quantile function), Acklam's algorithm.
   function normInv(p) {
     if (p <= 0 || p >= 1) {
       throw new RangeError("normInv: p must be in (0, 1)");
@@ -73,7 +72,6 @@
 
   // ---- Power / sample-size core ------------------------------------------
 
-  // Power for a two-sample comparison, equal n per group.
   function powerTwoSampleT(n, d, alpha, tails) {
     const ncp = d * Math.sqrt(n / 2);
     if (tails === 2) {
@@ -84,7 +82,6 @@
     return 1 - normCDF(zCrit - ncp);
   }
 
-  // Required n per group for a target power (closed-form approximation).
   function sampleSizeTwoSampleT(targetPower, d, alpha, tails) {
     if (d === 0) return Infinity;
     const zAlpha = tails === 2 ? normInv(1 - alpha / 2) : normInv(1 - alpha);
@@ -93,25 +90,30 @@
     return Math.ceil(n);
   }
 
-  // ---- DOM wiring ----------------------------------------------------------
+  // ---- Reusable calculator instance ---------------------------------------
+  // Wires up one calculator (direction toggle + form + result box) scoped to
+  // a container element, using data-role attributes instead of global IDs so
+  // multiple independent instances can coexist on one page (e.g. Multi-Omics
+  // and Proteomics tabs, both backed by the same engine).
 
-  document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("ttestForm");
-    if (!form) return; // JS loaded on a page without this calculator
+  function initCalculator(panel) {
+    const form = panel.querySelector('[data-role="calcForm"]');
+    if (!form) return;
 
-    const directionButtons = document.querySelectorAll("#directionToggle button");
-    const fieldN = document.getElementById("field-n");
-    const fieldPower = document.getElementById("field-power");
-    const effectInput = document.getElementById("effectInput");
-    const fieldD = document.getElementById("field-d");
-    const fieldMean1 = document.getElementById("field-mean1");
-    const fieldMean2 = document.getElementById("field-mean2");
-    const fieldSd = document.getElementById("field-sd");
-    const resultBox = document.getElementById("resultBox");
-    const resultHeadline = document.getElementById("resultHeadline");
-    const resultDetail = document.getElementById("resultDetail");
+    const q = (role) => panel.querySelector('[data-role="' + role + '"]');
+    const directionButtons = panel.querySelectorAll('[data-role="directionToggle"] button');
+    const fieldN = q("field-n");
+    const fieldPower = q("field-power");
+    const effectInput = q("effectInput");
+    const fieldD = q("field-d");
+    const fieldMean1 = q("field-mean1");
+    const fieldMean2 = q("field-mean2");
+    const fieldSd = q("field-sd");
+    const resultBox = q("resultBox");
+    const resultHeadline = q("resultHeadline");
+    const resultDetail = q("resultDetail");
 
-    let direction = "power"; // "power" = solve for power, "n" = solve for sample size
+    let direction = "power";
 
     directionButtons.forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -136,11 +138,11 @@
 
     function getEffectSize() {
       if (effectInput.value === "d") {
-        return parseFloat(document.getElementById("d").value);
+        return parseFloat(q("d").value);
       }
-      const m1 = parseFloat(document.getElementById("mean1").value);
-      const m2 = parseFloat(document.getElementById("mean2").value);
-      const sd = parseFloat(document.getElementById("sd").value);
+      const m1 = parseFloat(q("mean1").value);
+      const m2 = parseFloat(q("mean2").value);
+      const sd = parseFloat(q("sd").value);
       if (sd <= 0) throw new Error("Pooled SD must be greater than 0.");
       return (m1 - m2) / sd;
     }
@@ -150,15 +152,15 @@
       resultBox.classList.add("hidden");
 
       try {
-        const alpha = parseFloat(document.getElementById("alpha").value);
-        const tails = parseInt(document.getElementById("tails").value, 10);
+        const alpha = parseFloat(q("alpha").value);
+        const tails = parseInt(q("tails").value, 10);
         const d = getEffectSize();
 
         if (!(alpha > 0 && alpha < 1)) throw new Error("Alpha must be between 0 and 1.");
         if (d === 0) throw new Error("Effect size is 0 -- power is undefined/uninformative.");
 
         if (direction === "power") {
-          const n = parseInt(document.getElementById("n").value, 10);
+          const n = parseInt(q("n").value, 10);
           if (!(n >= 2)) throw new Error("Sample size per group must be at least 2.");
           const power = powerTwoSampleT(n, d, alpha, tails);
           resultHeadline.textContent = "Power = " + (power * 100).toFixed(1) + "%";
@@ -166,7 +168,7 @@
             "n = " + n + " per group, d = " + d.toFixed(3) +
             ", &alpha; = " + alpha + " (" + (tails === 2 ? "two-sided" : "one-sided") + ")";
         } else {
-          const targetPower = parseFloat(document.getElementById("targetPower").value);
+          const targetPower = parseFloat(q("targetPower").value);
           if (!(targetPower > 0 && targetPower < 1)) throw new Error("Target power must be between 0 and 1.");
           const n = sampleSizeTwoSampleT(targetPower, d, alpha, tails);
           resultHeadline.textContent = "n = " + n + " per group";
@@ -182,6 +184,34 @@
         resultBox.classList.remove("hidden");
       }
     });
+  }
+
+  // ---- Sidebar tab switching ----------------------------------------------
+
+  function initTabs() {
+    const sidebar = document.getElementById("powerSidebar");
+    if (!sidebar) return;
+
+    const tabButtons = sidebar.querySelectorAll(".power-tab");
+    tabButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const target = btn.dataset.tab;
+
+        tabButtons.forEach(function (b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+
+        document.querySelectorAll(".power-panel").forEach(function (panel) {
+          panel.classList.toggle("active", panel.id === "panel-" + target);
+        });
+      });
+    });
+  }
+
+  // ---- Init -----------------------------------------------------------------
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll('.power-panel[data-calc="mo"], .power-panel[data-calc="prot"]').forEach(initCalculator);
+    initTabs();
   });
 
   // Exposed for future unit testing / Phase 2+ reuse.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Multi-Omics Power Analysis &mdash; MSB</title>
+<title>Power Analysis &mdash; MSB</title>
 <link rel="stylesheet" href="../../assets/style.css">
 </head>
 <body>
@@ -19,90 +19,177 @@
 </header>
 
 <main>
-  <h1>Multi-Omics Power Analysis</h1>
-  <p class="lede">Sample size and statistical power for common study designs.</p>
+  <h1>Power Analysis</h1>
+  <p class="lede">Sample size and statistical power for common multi-omics study designs.</p>
 
-  <div class="mode-toggle" id="studyModeToggle">
-    <button type="button" class="active" data-mode="ttest">General two-group</button>
-    <button type="button" data-mode="rnaseq" disabled title="Planned &mdash; Phase 2">RNA-seq DE</button>
-    <button type="button" data-mode="metagenomics" disabled title="Planned &mdash; Phase 3">Metagenomics</button>
+  <div class="power-layout">
+    <nav class="power-sidebar" id="powerSidebar">
+      <button type="button" class="power-tab active" data-tab="multiomics">Multi-Omics</button>
+      <button type="button" class="power-tab" data-tab="proteomics">Proteomics</button>
+      <button type="button" class="power-tab" data-tab="transcriptomics">Transcriptomics <span class="status-pill status-planned">planned</span></button>
+      <button type="button" class="power-tab" data-tab="metagenomics">Metagenomics <span class="status-pill status-planned">planned</span></button>
+    </nav>
+
+    <div class="power-content">
+
+      <!-- Multi-Omics / general continuous outcome -->
+      <section class="power-panel active" id="panel-multiomics" data-calc="mo">
+        <p class="field-hint" style="margin-bottom:0.75rem;">
+          General continuous-outcome comparison &mdash; user-supplied effect size (or means/SD), suitable across
+          omics types where a standardized effect size and variance are the natural inputs.
+        </p>
+        <div class="mode-toggle" data-role="directionToggle">
+          <button type="button" class="active" data-direction="power">Solve for power</button>
+          <button type="button" data-direction="n">Solve for sample size</button>
+        </div>
+        <form class="calc-form" data-role="calcForm">
+          <div data-role="field-n">
+            <label>Sample size per group (n)</label>
+            <input type="number" data-role="n" min="2" step="1" value="20">
+            <div class="field-hint">Used when solving for power.</div>
+          </div>
+          <div data-role="field-power" style="display:none;">
+            <label>Target power</label>
+            <input type="number" data-role="targetPower" min="0.01" max="0.99" step="0.01" value="0.80">
+            <div class="field-hint">Used when solving for sample size.</div>
+          </div>
+          <div>
+            <label>Effect size input</label>
+            <select data-role="effectInput">
+              <option value="d">Cohen's d directly</option>
+              <option value="means">Mean1, Mean2, SD</option>
+            </select>
+          </div>
+          <div data-role="field-d">
+            <label>Cohen's d</label>
+            <input type="number" data-role="d" step="0.01" value="0.5">
+            <div class="field-hint">Standardized effect size, (mean1 &minus; mean2) / pooled SD (&asymp; effect / &radic;variance).</div>
+          </div>
+          <div data-role="field-mean1" style="display:none;">
+            <label>Mean, group 1</label>
+            <input type="number" data-role="mean1" step="any" value="10">
+          </div>
+          <div data-role="field-mean2" style="display:none;">
+            <label>Mean, group 2</label>
+            <input type="number" data-role="mean2" step="any" value="12">
+          </div>
+          <div data-role="field-sd" style="display:none;">
+            <label>Pooled SD</label>
+            <input type="number" data-role="sd" min="0.0001" step="any" value="4">
+          </div>
+          <div>
+            <label>Significance level (&alpha;)</label>
+            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="0.001" value="0.05">
+          </div>
+          <div>
+            <label>Test direction</label>
+            <select data-role="tails">
+              <option value="2">Two-sided</option>
+              <option value="1">One-sided</option>
+            </select>
+          </div>
+          <button type="submit" class="calc-submit">Calculate</button>
+        </form>
+        <div class="result-box hidden" data-role="resultBox">
+          <div class="headline" data-role="resultHeadline"></div>
+          <div data-role="resultDetail"></div>
+        </div>
+        <p class="caveat">
+          Two-sample comparison, equal group sizes, normal-approximation to the noncentral <em>t</em>-distribution
+          (Cohen's method).
+        </p>
+      </section>
+
+      <!-- Proteomics -->
+      <section class="power-panel" id="panel-proteomics" data-calc="prot">
+        <p class="field-hint" style="margin-bottom:0.75rem;">
+          Proteomics differential abundance, framed as a two-sample comparison of a continuous (e.g. log-intensity)
+          outcome &mdash; same underlying model as the Multi-Omics tab.
+        </p>
+        <div class="mode-toggle" data-role="directionToggle">
+          <button type="button" class="active" data-direction="power">Solve for power</button>
+          <button type="button" data-direction="n">Solve for sample size</button>
+        </div>
+        <form class="calc-form" data-role="calcForm">
+          <div data-role="field-n">
+            <label>Sample size per group (n)</label>
+            <input type="number" data-role="n" min="2" step="1" value="20">
+            <div class="field-hint">Used when solving for power.</div>
+          </div>
+          <div data-role="field-power" style="display:none;">
+            <label>Target power</label>
+            <input type="number" data-role="targetPower" min="0.01" max="0.99" step="0.01" value="0.80">
+            <div class="field-hint">Used when solving for sample size.</div>
+          </div>
+          <div>
+            <label>Effect size input</label>
+            <select data-role="effectInput">
+              <option value="d">Cohen's d directly</option>
+              <option value="means">Mean1, Mean2, SD</option>
+            </select>
+          </div>
+          <div data-role="field-d">
+            <label>Cohen's d</label>
+            <input type="number" data-role="d" step="0.01" value="0.5">
+            <div class="field-hint">Standardized effect size, (mean1 &minus; mean2) / pooled SD.</div>
+          </div>
+          <div data-role="field-mean1" style="display:none;">
+            <label>Mean, group 1</label>
+            <input type="number" data-role="mean1" step="any" value="10">
+          </div>
+          <div data-role="field-mean2" style="display:none;">
+            <label>Mean, group 2</label>
+            <input type="number" data-role="mean2" step="any" value="12">
+          </div>
+          <div data-role="field-sd" style="display:none;">
+            <label>Pooled SD</label>
+            <input type="number" data-role="sd" min="0.0001" step="any" value="4">
+          </div>
+          <div>
+            <label>Significance level (&alpha;)</label>
+            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="0.001" value="0.05">
+          </div>
+          <div>
+            <label>Test direction</label>
+            <select data-role="tails">
+              <option value="2">Two-sided</option>
+              <option value="1">One-sided</option>
+            </select>
+          </div>
+          <button type="submit" class="calc-submit">Calculate</button>
+        </form>
+        <div class="result-box hidden" data-role="resultBox">
+          <div class="headline" data-role="resultHeadline"></div>
+          <div data-role="resultDetail"></div>
+        </div>
+        <p class="caveat">
+          Two-sample comparison, equal group sizes, normal-approximation to the noncentral <em>t</em>-distribution
+          (Cohen's method). Adequate for typical proteomics/metabolomics-style continuous outcomes.
+        </p>
+      </section>
+
+      <!-- Transcriptomics (planned) -->
+      <section class="power-panel" id="panel-transcriptomics" data-calc="none">
+        <div class="power-placeholder">
+          <strong>Planned &mdash; Phase 2.</strong> RNA-seq differential expression power (negative-binomial /
+          Wald-test approximation, &agrave; la RNASeqPower / PROPER) needs a precomputed lookup table generated
+          offline in R across a grid of (n, fold-change, biological CV, &alpha;), interpolated client-side.
+          Not yet built &mdash; the t-test approximation used elsewhere on this page is not statistically
+          appropriate for count-based RNA-seq data.
+        </div>
+      </section>
+
+      <!-- Metagenomics (planned) -->
+      <section class="power-panel" id="panel-metagenomics" data-calc="none">
+        <div class="power-placeholder">
+          <strong>Planned &mdash; Phase 3.</strong> Metagenomics differential-abundance power (overdispersed-count /
+          Dirichlet-Multinomial or log-ratio approximation) needs its own precomputed lookup table, generated the
+          same way as the Transcriptomics mode. Not yet built.
+        </div>
+      </section>
+
+    </div>
   </div>
-
-  <section id="ttestCalculator">
-    <div class="mode-toggle" id="directionToggle">
-      <button type="button" class="active" data-direction="power">Solve for power</button>
-      <button type="button" data-direction="n">Solve for sample size</button>
-    </div>
-
-    <form class="calc-form" id="ttestForm">
-
-      <div id="field-n">
-        <label for="n">Sample size per group (n)</label>
-        <input type="number" id="n" min="2" step="1" value="20">
-        <div class="field-hint">Used when solving for power.</div>
-      </div>
-
-      <div id="field-power" style="display:none;">
-        <label for="targetPower">Target power</label>
-        <input type="number" id="targetPower" min="0.01" max="0.99" step="0.01" value="0.80">
-        <div class="field-hint">Used when solving for sample size.</div>
-      </div>
-
-      <div>
-        <label for="effectInput">Effect size input</label>
-        <select id="effectInput">
-          <option value="d">Cohen's d directly</option>
-          <option value="means">Mean1, Mean2, SD</option>
-        </select>
-      </div>
-
-      <div id="field-d">
-        <label for="d">Cohen's d</label>
-        <input type="number" id="d" step="0.01" value="0.5">
-        <div class="field-hint">Standardized effect size, (mean1 &minus; mean2) / pooled SD.</div>
-      </div>
-
-      <div id="field-mean1" style="display:none;">
-        <label for="mean1">Mean, group 1</label>
-        <input type="number" id="mean1" step="any" value="10">
-      </div>
-      <div id="field-mean2" style="display:none;">
-        <label for="mean2">Mean, group 2</label>
-        <input type="number" id="mean2" step="any" value="12">
-      </div>
-      <div id="field-sd" style="display:none;">
-        <label for="sd">Pooled SD</label>
-        <input type="number" id="sd" min="0.0001" step="any" value="4">
-      </div>
-
-      <div>
-        <label for="alpha">Significance level (&alpha;)</label>
-        <input type="number" id="alpha" min="0.0001" max="0.5" step="0.001" value="0.05">
-      </div>
-
-      <div>
-        <label for="tails">Test direction</label>
-        <select id="tails">
-          <option value="2">Two-sided</option>
-          <option value="1">One-sided</option>
-        </select>
-      </div>
-
-      <button type="submit" class="calc-submit">Calculate</button>
-    </form>
-
-    <div class="result-box hidden" id="resultBox">
-      <div id="resultHeadline" class="headline"></div>
-      <div id="resultDetail"></div>
-    </div>
-
-    <p class="caveat">
-      Two-sample comparison, equal group sizes, normal-approximation to the noncentral <em>t</em>-distribution
-      (Cohen's method). Adequate for typical metabolomics/proteomics-style continuous outcomes. Not appropriate
-      for count-based omics data (RNA-seq, metagenomics) &mdash; those modes are planned separately and will use
-      negative-binomial / overdispersed-count models rather than this t-test approximation.
-    </p>
-  </section>
 </main>
 
 <footer class="site-footer">
