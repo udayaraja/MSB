@@ -192,13 +192,17 @@
     const sidebar = document.getElementById("powerSidebar");
     if (!sidebar) return;
 
+    const emptyState = document.getElementById("powerEmptyState");
     const tabButtons = sidebar.querySelectorAll(".power-tab");
+
     tabButtons.forEach(function (btn) {
       btn.addEventListener("click", function () {
         const target = btn.dataset.tab;
 
         tabButtons.forEach(function (b) { b.classList.remove("active"); });
         btn.classList.add("active");
+
+        if (emptyState) emptyState.classList.remove("active");
 
         document.querySelectorAll(".power-panel").forEach(function (panel) {
           panel.classList.toggle("active", panel.id === "panel-" + target);

@@ -109,6 +109,75 @@ p.lede { color: var(--text-muted); font-size: 1.05rem; }
 }
 .card.card-project h3 { color: #6a3d9a; }
 
+.power-layout {
+  display: flex;
+  gap: 1.75rem;
+  align-items: flex-start;
+  margin-top: 1.5rem;
+}
+
+.power-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 190px;
+  flex-shrink: 0;
+}
+
+.power-tab {
+  text-align: left;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.power-tab:hover { border-color: var(--accent); }
+
+.power-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.power-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.power-panel { display: none; }
+.power-panel.active { display: block; }
+
+.power-empty-state {
+  display: none;
+  padding: 2rem 1.5rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  max-width: 700px;
+}
+.power-empty-state.active { display: block; }
+
+.power-placeholder {
+  padding: 1.5rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  max-width: 700px;
+}
+
+@media (max-width: 680px) {
+  .power-layout { flex-direction: column; }
+  .power-sidebar { flex-direction: row; flex-wrap: wrap; min-width: 0; }
+}
+
 .card h3 { margin-top: 0; color: var(--accent-dark); }
 .card p { margin: 0.3rem 0 0; color: var(--text-muted); font-size: 0.92rem; }
 

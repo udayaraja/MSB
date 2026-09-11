@@ -24,7 +24,7 @@
 
   <div class="power-layout">
     <nav class="power-sidebar" id="powerSidebar">
-      <button type="button" class="power-tab active" data-tab="multiomics">Multi-Omics</button>
+      <button type="button" class="power-tab" data-tab="multiomics">Multi-Omics</button>
       <button type="button" class="power-tab" data-tab="proteomics">Proteomics</button>
       <button type="button" class="power-tab" data-tab="transcriptomics">Transcriptomics <span class="status-pill status-planned">planned</span></button>
       <button type="button" class="power-tab" data-tab="metagenomics">Metagenomics <span class="status-pill status-planned">planned</span></button>
@@ -32,8 +32,12 @@
 
     <div class="power-content">
 
+      <div class="power-empty-state active" id="powerEmptyState">
+        Select a study type from the left to open its calculator.
+      </div>
+
       <!-- Multi-Omics / general continuous outcome -->
-      <section class="power-panel active" id="panel-multiomics" data-calc="mo">
+      <section class="power-panel" id="panel-multiomics" data-calc="mo">
         <p class="field-hint" style="margin-bottom:0.75rem;">
           General continuous-outcome comparison &mdash; user-supplied effect size (or means/SD), suitable across
           omics types where a standardized effect size and variance are the natural inputs.
