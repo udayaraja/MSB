@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Power Analysis &mdash; MSB</title>
+<title>Power Analysis - MSB</title>
 <link rel="stylesheet" href="../../assets/style.css">
 </head>
 <body>
@@ -39,7 +39,7 @@
       <!-- Multi-Omics / general continuous outcome -->
       <section class="power-panel" id="panel-multiomics" data-calc="mo">
         <p class="field-hint" style="margin-bottom:0.75rem;">
-          General continuous-outcome comparison &mdash; user-supplied effect size (or means/SD), suitable across
+          General continuous-outcome comparison, user-supplied effect size (or means/SD), suitable across
           omics types where a standardized effect size and variance are the natural inputs.
         </p>
         <div class="mode-toggle" data-role="directionToggle">
@@ -91,7 +91,7 @@
 
           <label class="full-width mtc-toggle-label">
             <input type="checkbox" data-role="mtcEnable">
-            Correct for multiple testing (FDR) &mdash; Tarazona et al. 2020, Eq. 3
+            Correct for multiple testing (FDR) - Tarazona et al. 2020, Eq. 3
           </label>
 
           <div data-role="field-alpha">
@@ -132,7 +132,7 @@
       <section class="power-panel" id="panel-proteomics" data-calc="prot">
         <p class="field-hint" style="margin-bottom:0.75rem;">
           Proteomics differential abundance, framed as a two-sample comparison of a continuous (e.g. log-intensity)
-          outcome &mdash; same underlying model as the Multi-Omics tab.
+          outcome - same underlying model as the Multi-Omics tab.
         </p>
         <div class="mode-toggle" data-role="directionToggle">
           <button type="button" class="active" data-direction="power">Solve for power</button>
@@ -183,7 +183,7 @@
 
           <label class="full-width mtc-toggle-label">
             <input type="checkbox" data-role="mtcEnable">
-            Correct for multiple testing (FDR) &mdash; Tarazona et al. 2020, Eq. 3
+            Correct for multiple testing (FDR) - Tarazona et al. 2020, Eq. 3
           </label>
 
           <div data-role="field-alpha">
@@ -222,7 +222,7 @@
       <!-- Transcriptomics (RNA-seq DE) -->
       <section class="power-panel" id="panel-transcriptomics" data-calc="nb">
         <p class="field-hint" style="margin-bottom:0.75rem;">
-          RNA-seq differential expression &mdash; negative-binomial Wald-test approximation
+          RNA-seq differential expression - negative-binomial Wald-test approximation
           (Hart et al. 2013, <em>Bioinformatics</em>; as implemented in the RNASeqPower Bioconductor package).
         </p>
         <div class="mode-toggle" data-role="directionToggle">
@@ -265,7 +265,7 @@
 
           <label class="full-width mtc-toggle-label">
             <input type="checkbox" data-role="mtcEnable">
-            Correct for multiple testing (FDR) &mdash; Tarazona et al. 2020, Eq. 3
+            Correct for multiple testing (FDR) - Tarazona et al. 2020, Eq. 3
           </label>
 
           <div data-role="field-alpha">
@@ -296,7 +296,7 @@
         </div>
         <p class="caveat">
           Negative-binomial mean-variance model (Var = &mu; + CV&sup2;&mu;&sup2;), Wald test on log fold-change,
-          normal approximation (delta method) &mdash; analytic, not simulation-based, matching the closed-form
+          normal approximation (delta method) - analytic, not simulation-based, matching the closed-form
           approach used by RNASeqPower.
         </p>
       </section>
@@ -304,7 +304,7 @@
       <!-- Metagenomics (differential abundance) -->
       <section class="power-panel" id="panel-metagenomics" data-calc="nb">
         <p class="field-hint" style="margin-bottom:0.75rem;">
-          Metagenomics differential abundance &mdash; reuses the same negative-binomial Wald-test approximation as
+          Metagenomics differential abundance, reuses the same negative-binomial Wald-test approximation as
           Transcriptomics. Typical compositional/biological CV runs higher than RNA-seq due to sparsity and
           compositionality; default below is a starting point, not a validated metagenomics-specific constant.
         </p>
@@ -348,7 +348,7 @@
 
           <label class="full-width mtc-toggle-label">
             <input type="checkbox" data-role="mtcEnable">
-            Correct for multiple testing (FDR) &mdash; Tarazona et al. 2020, Eq. 3
+            Correct for multiple testing (FDR) - Tarazona et al. 2020, Eq. 3
           </label>
 
           <div data-role="field-alpha">
