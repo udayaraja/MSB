@@ -96,7 +96,7 @@
 
           <div data-role="field-alpha">
             <label>Significance level (&alpha;)</label>
-            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="0.001" value="0.05">
+            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="any" value="0.05">
           </div>
 
           <div data-role="field-mtc" class="full-width mtc-row" style="display:none;">
@@ -106,11 +106,11 @@
             </div>
             <div>
               <label>Expected % DE</label>
-              <input type="number" data-role="dePercent" min="0.01" max="99" step="0.1" value="10">
+              <input type="number" data-role="dePercent" min="0.01" max="99" step="any" value="10">
             </div>
             <div>
               <label>Target FDR</label>
-              <input type="number" data-role="targetFDR" min="0.0001" max="0.5" step="0.001" value="0.05">
+              <input type="number" data-role="targetFDR" min="0.0001" max="0.5" step="any" value="0.05">
             </div>
           </div>
 
@@ -188,7 +188,7 @@
 
           <div data-role="field-alpha">
             <label>Significance level (&alpha;)</label>
-            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="0.001" value="0.05">
+            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="any" value="0.05">
           </div>
 
           <div data-role="field-mtc" class="full-width mtc-row" style="display:none;">
@@ -198,11 +198,11 @@
             </div>
             <div>
               <label>Expected % DE</label>
-              <input type="number" data-role="dePercent" min="0.01" max="99" step="0.1" value="20">
+              <input type="number" data-role="dePercent" min="0.01" max="99" step="any" value="20">
             </div>
             <div>
               <label>Target FDR</label>
-              <input type="number" data-role="targetFDR" min="0.0001" max="0.5" step="0.001" value="0.05">
+              <input type="number" data-role="targetFDR" min="0.0001" max="0.5" step="any" value="0.05">
             </div>
           </div>
 
@@ -252,7 +252,7 @@
           </div>
           <div>
             <label>Fold change to detect</label>
-            <input type="number" data-role="fc" min="1.001" step="0.1" value="2">
+            <input type="number" data-role="fc" min="1.001" step="any" value="2">
             <div class="field-hint">Ratio between condition means, e.g. 2 = two-fold change.</div>
           </div>
           <div>
@@ -270,7 +270,7 @@
 
           <div data-role="field-alpha">
             <label>Significance level (&alpha;)</label>
-            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="0.001" value="0.05">
+            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="any" value="0.05">
           </div>
 
           <div data-role="field-mtc" class="full-width mtc-row" style="display:none;">
@@ -280,11 +280,11 @@
             </div>
             <div>
               <label>Expected % DE</label>
-              <input type="number" data-role="dePercent" min="0.01" max="99" step="0.1" value="40">
+              <input type="number" data-role="dePercent" min="0.01" max="99" step="any" value="40">
             </div>
             <div>
               <label>Target FDR</label>
-              <input type="number" data-role="targetFDR" min="0.0001" max="0.5" step="0.001" value="0.05">
+              <input type="number" data-role="targetFDR" min="0.0001" max="0.5" step="any" value="0.05">
             </div>
           </div>
 
@@ -297,8 +297,7 @@
         <p class="caveat">
           Negative-binomial mean-variance model (Var = &mu; + CV&sup2;&mu;&sup2;), Wald test on log fold-change,
           normal approximation (delta method) &mdash; analytic, not simulation-based, matching the closed-form
-          approach used by RNASeqPower. Not a substitute for a full simulation-based check (e.g. PROPER) close to
-          a funding or publication decision.
+          approach used by RNASeqPower.
         </p>
       </section>
 
@@ -336,7 +335,7 @@
           </div>
           <div>
             <label>Fold change to detect</label>
-            <input type="number" data-role="fc" min="1.001" step="0.1" value="2">
+            <input type="number" data-role="fc" min="1.001" step="any" value="2">
             <div class="field-hint">Ratio between condition mean abundances.</div>
           </div>
           <div>
@@ -354,7 +353,7 @@
 
           <div data-role="field-alpha">
             <label>Significance level (&alpha;)</label>
-            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="0.001" value="0.05">
+            <input type="number" data-role="alpha" min="0.0001" max="0.5" step="any" value="0.05">
           </div>
 
           <div data-role="field-mtc" class="full-width mtc-row" style="display:none;">
@@ -364,11 +363,11 @@
             </div>
             <div>
               <label>Expected % DE</label>
-              <input type="number" data-role="dePercent" min="0.01" max="99" step="0.1" value="15">
+              <input type="number" data-role="dePercent" min="0.01" max="99" step="any" value="15">
             </div>
             <div>
               <label>Target FDR</label>
-              <input type="number" data-role="targetFDR" min="0.0001" max="0.5" step="0.001" value="0.05">
+              <input type="number" data-role="targetFDR" min="0.0001" max="0.5" step="any" value="0.05">
             </div>
           </div>
 
@@ -382,7 +381,7 @@
           <strong>Not independently validated for metagenomic data.</strong> This reuses the RNA-seq negative-binomial
           Wald approximation with no Dirichlet-Multinomial or compositional-specific correction. Treat as a rough
           planning estimate; for a design decision that matters, cross-check with a simulation-based tool
-          (e.g. HMP power calculations, metagenomeSeq) using real pilot data.
+          using real pilot data.
         </p>
       </section>
 
