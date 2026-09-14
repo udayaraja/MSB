@@ -267,6 +267,28 @@ button.calc-submit {
 
 button.calc-submit:hover { background: var(--accent-dark); }
 
+.mtc-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.25rem;
+}
+
+.mtc-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.mtc-row > div { flex: 1; min-width: 150px; }
+
 .result-box {
   margin-top: 1.5rem;
   padding: 1rem 1.25rem;

@@ -1,17 +1,19 @@
 /*
  * Multi-Omics Power Analysis tool.
- * Phase 1: general two-group (Cohen's d / two-sample t-test) engine, reused
- * across the Multi-Omics and Proteomics tabs (same underlying model).
  *
- * Method: normal approximation to the noncentral t-distribution (Cohen, 1988),
- * equal n per group. Closed-form approximation, adequate for typical n >~ 10-15
- * per group -- not an exact noncentral-t computation.
+ * Two statistical engines:
+ *  1. Two-sample t-test / Cohen's d (normal approximation to noncentral t,
+ *     Cohen 1988) -- used by Multi-Omics and Proteomics tabs.
+ *  2. Negative-binomial Wald-test approximation (Hart et al. 2013,
+ *     Bioinformatics; the closed-form method behind the RNASeqPower
+ *     Bioconductor package) -- used by Transcriptomics and Metagenomics
+ *     tabs. Metagenomics reuses this engine with no compositional/DM-specific
+ *     correction; see the caveat text on that panel.
  *
- * Transcriptomics (RNA-seq DE) and Metagenomics tabs are Phase 2/3, NOT
- * implemented here -- they need precomputed lookup tables generated offline
- * in R (RNASeqPower / PROPER for RNA-seq), interpolated client-side. Their
- * panels are static placeholders; see markup for details. Planned dispersion
- * input for RNA-seq mode: biological CV (decided 2026-09, not yet built).
+ * Both engines optionally take a multiple-testing-corrected alpha, following
+ * Tarazona et al. 2020 (Nat Commun 11:3092), Eq. 3:
+ *   alpha* = (m1 * FDR) / ((m - m1) * (1 - FDR)),  m1 = m * (expected % DE)
+ * where the entered "target FDR" plays the role of alpha in that equation.
  */
 
 (function () {
@@ -70,7 +72,7 @@
     }
   }
 
-  // ---- Power / sample-size core ------------------------------------------
+  // ---- Engine 1: two-sample t-test / Cohen's d ----------------------------
 
   function powerTwoSampleT(n, d, alpha, tails) {
     const ncp = d * Math.sqrt(n / 2);
@@ -90,13 +92,80 @@
     return Math.ceil(n);
   }
 
-  // ---- Reusable calculator instance ---------------------------------------
-  // Wires up one calculator (direction toggle + form + result box) scoped to
-  // a container element, using data-role attributes instead of global IDs so
-  // multiple independent instances can coexist on one page (e.g. Multi-Omics
-  // and Proteomics tabs, both backed by the same engine).
+  // ---- Engine 2: negative-binomial Wald test (Hart et al. 2013) ----------
+  // Var(count) = mu + cv^2 * mu^2 (NB parameterized by biological CV).
+  // Delta-method: Var(log count) ~= 1/mu + cv^2 per sample; comparing two
+  // group log-means gives total variance 2*(1/mu + cv^2)/n.
 
-  function initCalculator(panel) {
+  function powerNBWald(n, mu, cv, fc, alpha, tails) {
+    const logFC = Math.log(fc);
+    const se = Math.sqrt((2 * (1 / mu + cv * cv)) / n);
+    const z = Math.abs(logFC) / se;
+    if (tails === 2) {
+      const zCrit = normInv(1 - alpha / 2);
+      return (1 - normCDF(zCrit - z)) + normCDF(-zCrit - z);
+    }
+    const zCrit = normInv(1 - alpha);
+    return 1 - normCDF(zCrit - z);
+  }
+
+  function sampleSizeNBWald(targetPower, mu, cv, fc, alpha, tails) {
+    const logFC = Math.log(fc);
+    if (logFC === 0) return Infinity;
+    const zAlpha = tails === 2 ? normInv(1 - alpha / 2) : normInv(1 - alpha);
+    const zBeta = normInv(targetPower);
+    const n = 2 * (1 / mu + cv * cv) * Math.pow((zAlpha + zBeta) / Math.abs(logFC), 2);
+    return Math.ceil(n);
+  }
+
+  // ---- Multiple-testing correction (Tarazona et al. 2020, Eq. 3) ---------
+
+  function correctedAlpha(m, dePercentFraction, fdr) {
+    const m1 = m * dePercentFraction;
+    if (m1 >= m) throw new Error("Expected % DE must be less than 100%.");
+    return (m1 * fdr) / ((m - m1) * (1 - fdr));
+  }
+
+  function getEffectiveAlpha(panel) {
+    const checkbox = panel.querySelector('[data-role="mtcEnable"]');
+    if (checkbox && checkbox.checked) {
+      const m = parseFloat(panel.querySelector('[data-role="numFeatures"]').value);
+      const dePercent = parseFloat(panel.querySelector('[data-role="dePercent"]').value);
+      const fdr = parseFloat(panel.querySelector('[data-role="targetFDR"]').value);
+      if (!(m > 1)) throw new Error("Number of features tested must be greater than 1.");
+      if (!(dePercent > 0 && dePercent < 100)) throw new Error("Expected % DE must be between 0 and 100.");
+      if (!(fdr > 0 && fdr < 1)) throw new Error("Target FDR must be between 0 and 1.");
+      const alphaStar = correctedAlpha(m, dePercent / 100, fdr);
+      return { alpha: alphaStar, corrected: true, m: m, dePercent: dePercent, fdr: fdr };
+    }
+    const alpha = parseFloat(panel.querySelector('[data-role="alpha"]').value);
+    return { alpha: alpha, corrected: false };
+  }
+
+  function initMTC(panel) {
+    const checkbox = panel.querySelector('[data-role="mtcEnable"]');
+    if (!checkbox) return;
+    const fieldAlpha = panel.querySelector('[data-role="field-alpha"]');
+    const fieldMtc = panel.querySelector('[data-role="field-mtc"]');
+    checkbox.addEventListener("change", function () {
+      fieldAlpha.style.display = checkbox.checked ? "none" : "";
+      fieldMtc.style.display = checkbox.checked ? "" : "none";
+    });
+  }
+
+  function alphaDetailText(alphaInfo, tails) {
+    const tailLabel = tails === 2 ? "two-sided" : "one-sided";
+    if (alphaInfo.corrected) {
+      return "&alpha;* = " + alphaInfo.alpha.toExponential(3) +
+        " (FDR-adjusted, m=" + alphaInfo.m + ", " + alphaInfo.dePercent + "% DE, target FDR=" +
+        alphaInfo.fdr + ", " + tailLabel + ")";
+    }
+    return "&alpha; = " + alphaInfo.alpha + " (" + tailLabel + ")";
+  }
+
+  // ---- Calculator 1: t-test / Cohen's d instance --------------------------
+
+  function initTTestCalculator(panel) {
     const form = panel.querySelector('[data-role="calcForm"]');
     if (!form) return;
 
@@ -112,6 +181,8 @@
     const resultBox = q("resultBox");
     const resultHeadline = q("resultHeadline");
     const resultDetail = q("resultDetail");
+
+    initMTC(panel);
 
     let direction = "power";
 
@@ -152,8 +223,9 @@
       resultBox.classList.add("hidden");
 
       try {
-        const alpha = parseFloat(q("alpha").value);
         const tails = parseInt(q("tails").value, 10);
+        const alphaInfo = getEffectiveAlpha(panel);
+        const alpha = alphaInfo.alpha;
         const d = getEffectSize();
 
         if (!(alpha > 0 && alpha < 1)) throw new Error("Alpha must be between 0 and 1.");
@@ -165,16 +237,88 @@
           const power = powerTwoSampleT(n, d, alpha, tails);
           resultHeadline.textContent = "Power = " + (power * 100).toFixed(1) + "%";
           resultDetail.innerHTML =
-            "n = " + n + " per group, d = " + d.toFixed(3) +
-            ", &alpha; = " + alpha + " (" + (tails === 2 ? "two-sided" : "one-sided") + ")";
+            "n = " + n + " per group, d = " + d.toFixed(3) + ", " + alphaDetailText(alphaInfo, tails);
         } else {
           const targetPower = parseFloat(q("targetPower").value);
           if (!(targetPower > 0 && targetPower < 1)) throw new Error("Target power must be between 0 and 1.");
           const n = sampleSizeTwoSampleT(targetPower, d, alpha, tails);
           resultHeadline.textContent = "n = " + n + " per group";
           resultDetail.innerHTML =
-            "Target power = " + (targetPower * 100).toFixed(0) + "%, d = " + d.toFixed(3) +
-            ", &alpha; = " + alpha + " (" + (tails === 2 ? "two-sided" : "one-sided") + ")";
+            "Target power = " + (targetPower * 100).toFixed(0) + "%, d = " + d.toFixed(3) + ", " +
+            alphaDetailText(alphaInfo, tails);
+        }
+
+        resultBox.classList.remove("hidden");
+      } catch (err) {
+        resultHeadline.textContent = "Input error";
+        resultDetail.textContent = err.message;
+        resultBox.classList.remove("hidden");
+      }
+    });
+  }
+
+  // ---- Calculator 2: NB Wald instance (Transcriptomics / Metagenomics) ---
+
+  function initNBCalculator(panel) {
+    const form = panel.querySelector('[data-role="calcForm"]');
+    if (!form) return;
+
+    const q = (role) => panel.querySelector('[data-role="' + role + '"]');
+    const directionButtons = panel.querySelectorAll('[data-role="directionToggle"] button');
+    const fieldN = q("field-n");
+    const fieldPower = q("field-power");
+    const resultBox = q("resultBox");
+    const resultHeadline = q("resultHeadline");
+    const resultDetail = q("resultDetail");
+
+    initMTC(panel);
+
+    let direction = "power";
+
+    directionButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        directionButtons.forEach(function (b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        direction = btn.dataset.direction;
+        fieldN.style.display = direction === "power" ? "" : "none";
+        fieldPower.style.display = direction === "n" ? "" : "none";
+        resultBox.classList.add("hidden");
+      });
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      resultBox.classList.add("hidden");
+
+      try {
+        const tails = parseInt(q("tails").value, 10);
+        const alphaInfo = getEffectiveAlpha(panel);
+        const alpha = alphaInfo.alpha;
+        const mu = parseFloat(q("mu").value);
+        const cv = parseFloat(q("cv").value);
+        const fc = parseFloat(q("fc").value);
+
+        if (!(alpha > 0 && alpha < 1)) throw new Error("Alpha must be between 0 and 1.");
+        if (!(mu > 0)) throw new Error("Mean count must be greater than 0.");
+        if (!(cv >= 0)) throw new Error("Biological CV must be 0 or greater.");
+        if (!(fc > 0) || fc === 1) throw new Error("Fold change must be > 0 and not equal to 1.");
+
+        if (direction === "power") {
+          const n = parseInt(q("n").value, 10);
+          if (!(n >= 2)) throw new Error("Sample size per group must be at least 2.");
+          const power = powerNBWald(n, mu, cv, fc, alpha, tails);
+          resultHeadline.textContent = "Power = " + (Math.min(power, 1) * 100).toFixed(1) + "%";
+          resultDetail.innerHTML =
+            "n = " + n + " per group, &mu; = " + mu + ", CV = " + cv + ", fold change = " + fc +
+            ", " + alphaDetailText(alphaInfo, tails);
+        } else {
+          const targetPower = parseFloat(q("targetPower").value);
+          if (!(targetPower > 0 && targetPower < 1)) throw new Error("Target power must be between 0 and 1.");
+          const n = sampleSizeNBWald(targetPower, mu, cv, fc, alpha, tails);
+          resultHeadline.textContent = "n = " + n + " per group";
+          resultDetail.innerHTML =
+            "Target power = " + (targetPower * 100).toFixed(0) + "%, &mu; = " + mu + ", CV = " + cv +
+            ", fold change = " + fc + ", " + alphaDetailText(alphaInfo, tails);
         }
 
         resultBox.classList.remove("hidden");
@@ -214,15 +358,19 @@
   // ---- Init -----------------------------------------------------------------
 
   document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll('.power-panel[data-calc="mo"], .power-panel[data-calc="prot"]').forEach(initCalculator);
+    document.querySelectorAll('.power-panel[data-calc="mo"], .power-panel[data-calc="prot"]').forEach(initTTestCalculator);
+    document.querySelectorAll('.power-panel[data-calc="nb"]').forEach(initNBCalculator);
     initTabs();
   });
 
-  // Exposed for future unit testing / Phase 2+ reuse.
+  // Exposed for future unit testing / reuse.
   window.MSBPower = {
     normCDF: normCDF,
     normInv: normInv,
     powerTwoSampleT: powerTwoSampleT,
-    sampleSizeTwoSampleT: sampleSizeTwoSampleT
+    sampleSizeTwoSampleT: sampleSizeTwoSampleT,
+    powerNBWald: powerNBWald,
+    sampleSizeNBWald: sampleSizeNBWald,
+    correctedAlpha: correctedAlpha
   };
 })();
