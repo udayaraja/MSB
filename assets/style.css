@@ -109,6 +109,12 @@ p.lede { color: var(--text-muted); font-size: 1.05rem; }
 }
 .card.card-project h3 { color: #6a3d9a; }
 
+.card.card-tutorial {
+  background: #fff3e0;
+  border-color: #f5cb8c;
+}
+.card.card-tutorial h3 { color: #a85d00; }
+
 .power-layout {
   display: flex;
   gap: 1.75rem;
