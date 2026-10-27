@@ -1,0 +1,4 @@
+trait	naive LM	LM + 5 PCs	LMM-LOCO	h2_SNP	min p (LMM)	lead SNP (LMM)	n ≥ 0.05/M_eff
+mastitis	1.13	1.2	1.01	0.53 ± 0.22 (liability)	3.8e-05	ARS-BFGL-NGS-97688	0
+my305	1.59	1.54	1.14	0.42 ± 0.08 (observed)	7.2e-07	ARS-BFGL-NGS-4939	2
+rfi	1.87	1.22	1.07	0.41 ± 0.08 (observed)	1.9e-05	ARS-BFGL-NGS-67960	0

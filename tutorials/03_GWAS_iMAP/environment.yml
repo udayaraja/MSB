@@ -1,0 +1,11 @@
+name: imap-gwas
+channels: [conda-forge, bioconda]
+dependencies:
+  - python=3.11
+  - plink2
+  - gcta
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - jupyterlab

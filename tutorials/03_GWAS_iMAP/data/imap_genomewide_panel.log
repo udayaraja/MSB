@@ -1,0 +1,26 @@
+PLINK v2.0.0-a.7.8 64-bit (19 Sep 2026)
+Options in effect:
+  --bfile /mnt/user-data/uploads/iMAP/ml_sets/setB_dense
+  --cow
+  --extract keep.txt
+  --make-bed
+  --out imap_genomewide_panel
+
+Hostname: vm
+Working directory: /home/claude/gwas_tutorial/data
+Start time: Sat Oct 24 20:32:37 2026
+
+Random number seed: 1792866757
+8027 MiB RAM detected, ~7585 available; reserving 4013 MiB for main workspace.
+Using up to 2 compute threads.
+588 samples (588 females, 0 males; 0 founders) loaded from
+/mnt/user-data/uploads/iMAP/ml_sets/setB_dense.fam.
+37370 variants loaded from /mnt/user-data/uploads/iMAP/ml_sets/setB_dense.bim.
+Note: No phenotype data present.
+--extract: 12747 variants remaining.
+12747 variants remaining after main filters.
+Writing imap_genomewide_panel.fam ... done.
+Writing imap_genomewide_panel.bim ... done.
+Writing imap_genomewide_panel.bed ... done.
+
+End time: Sat Oct 24 20:32:37 2026
